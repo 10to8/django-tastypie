@@ -15,7 +15,7 @@ from tastypie.authorization import ReadOnlyAuthorization
 from tastypie.bundle import Bundle
 from tastypie.cache import NoCache
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
-from tastypie.exceptions import NotFound, BadRequest, InvalidFilterError, HydrationError, InvalidSortError, ImmediateHttpResponse
+from tastypie.exceptions import NotFound, BadRequest, InvalidFilterError, HydrationError, InvalidSortError, ImmediateHttpResponse, UniqueConstraint
 from tastypie import fields
 from tastypie import http
 from tastypie.paginator import Paginator
@@ -224,6 +224,8 @@ class Resource(object):
                 return response
             except (BadRequest, fields.ApiFieldError), e:
                 return http.HttpBadRequest(e.args[0])
+            except (UniqueConstraint), e:
+                return http.HttpConflict(e.args[0])
             except ValidationError, e:
                 return http.HttpBadRequest(', '.join(e.messages))
             except Exception, e:
@@ -261,7 +263,10 @@ class Resource(object):
             response_class = HttpResponseNotFound
             response_code = 404
 
-        if settings.DEBUG:
+        from core.lib.logger import tastypie_logger
+        tastypie_logger.exception("TastyPie Error: '%s', traceback: '%s' " % (unicode(exception), the_trace))
+
+        if settings.DEBUG or getattr(settings, 'TASTYPIE_FULL_DEBUG', False):
             data = {
                 "error_message": unicode(exception),
                 "traceback": the_trace,
@@ -1925,6 +1930,7 @@ class ModelResource(Resource):
         # Now pick up the M2M bits.
         m2m_bundle = self.hydrate_m2m(bundle)
         self.save_m2m(m2m_bundle)
+
         return bundle
 
     def lookup_kwargs_with_identifiers(self, bundle, kwargs):

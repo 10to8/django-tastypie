@@ -48,6 +48,16 @@ class BadRequest(TastypieError):
     """
     pass
 
+class UniqueConstraint(TastypieError):
+    """
+    A exception for indicating a duplicate entry on something that can't be. A username, for example.
+
+    Will return a 409: conflict.
+
+    Handled specially in that the message tossed by this exception will be
+    presented to the end user.
+    """
+    pass
 
 class BlueberryFillingFound(TastypieError):
     pass
