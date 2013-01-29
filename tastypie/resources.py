@@ -24,6 +24,9 @@ from tastypie.throttle import BaseThrottle
 from tastypie.utils import is_valid_jsonp_callback_value, dict_strip_unicode_keys, trailing_slash
 from tastypie.utils.mime import determine_format, build_content_type
 from tastypie.validation import Validation
+
+from copy import copy
+
 try:
     set
 except NameError:
@@ -71,7 +74,7 @@ class ResourceOptions(object):
     list_allowed_methods = None
     detail_allowed_methods = None
     limit = getattr(settings, 'API_LIMIT_PER_PAGE', 20)
-    max_limit = 1000
+    max_limit = getattr(settings, 'API_MAX_LIMIT_PER_PAGE', 100)
     api_name = None
     resource_name = None
     urlconf_namespace = None
@@ -176,10 +179,16 @@ class Resource(object):
     __metaclass__ = DeclarativeMetaclass
 
     def __init__(self, api_name=None):
-        self.fields = deepcopy(self.base_fields)
+
+        #self.fields = deepcopy(self.base_fields)
+        self.fields = {k: copy(v) for k, v in self.base_fields.iteritems()}
 
         if not api_name is None:
             self._meta.api_name = api_name
+
+    #    self.fields = deepcopy(self.base_fields)
+
+     ##      self._meta.api_name = api_name
 
     def __getattr__(self, name):
         if name in self.fields:
