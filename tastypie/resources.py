@@ -6,7 +6,6 @@ from django.conf import settings
 from django.conf.urls import patterns, url
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
 from django.core.urlresolvers import NoReverseMatch, reverse, resolve, Resolver404, get_script_prefix
-from django.db import transaction
 from django.db.models.sql.constants import QUERY_TERMS
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.utils.cache import patch_cache_control, patch_vary_headers
@@ -24,6 +23,9 @@ from tastypie.throttle import BaseThrottle
 from tastypie.utils import is_valid_jsonp_callback_value, dict_strip_unicode_keys, trailing_slash
 from tastypie.utils.mime import determine_format, build_content_type
 from tastypie.validation import Validation
+
+from django.db import transaction
+
 
 from copy import copy
 
@@ -206,6 +208,7 @@ class Resource(object):
         """
         @csrf_exempt
         def wrapper(request, *args, **kwargs):
+            transaction.set_autocommit(False)
             try:
                 callback = getattr(self, view)
                 response = callback(request, *args, **kwargs)
@@ -230,14 +233,19 @@ class Resource(object):
                     # See http://www.enhanceie.com/ie/bugs.asp for details.
                     patch_cache_control(response, no_cache=True)
 
+                transaction.commit()
                 return response
             except (BadRequest, fields.ApiFieldError), e:
+                transaction.rollback()
                 return http.HttpBadRequest(e.args[0])
             except (UniqueConstraint), e:
+                transaction.rollback()
                 return http.HttpConflict(e.args[0])
             except ValidationError, e:
+                transaction.rollback()
                 return http.HttpBadRequest(', '.join(e.messages))
             except Exception, e:
+                transaction.rollback()
                 if hasattr(e, 'response'):
                     return e.response
 
@@ -256,6 +264,8 @@ class Resource(object):
                 # what Django does. The difference is returning a serialized
                 # error message.
                 return self._handle_500(request, e)
+            finally:
+                transaction.set_autocommit(True)
 
         return wrapper
 
@@ -2049,7 +2059,6 @@ class ModelResource(Resource):
 
         obj.delete()
 
-    @transaction.commit_on_success()
     def patch_list(self, request, **kwargs):
         """
         An ORM-specific implementation of ``patch_list``.
