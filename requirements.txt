@@ -5,3 +5,4 @@ lxml
 PyYAML
 python-digest
 biplist
+simplejson

@@ -27,19 +27,6 @@
         </value>
       </option>
     </inspection_tool>
-    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
-      <option name="ignoredIdentifiers">
-        <value>
-          <list size="6">
-            <item index="0" class="java.lang.String" itemvalue="objects" />
-            <item index="1" class="java.lang.String" itemvalue="verification.send" />
-            <item index="2" class="java.lang.String" itemvalue="settings" />
-            <item index="3" class="java.lang.String" itemvalue="core.store.models._create_preferences_field" />
-            <item index="4" class="java.lang.String" itemvalue="core.web_api.sessions.find_session_keys_for_user" />
-            <item index="5" class="java.lang.String" itemvalue="core.web_api.subscriptions.JSONDecodeError" />
-          </list>
-        </value>
-      </option>
-    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
   </profile>
 </component>
