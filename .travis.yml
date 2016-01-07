@@ -2,12 +2,30 @@ language: python
 
 python:
   - "2.6"
+  - "2.7"
+  - "3.3"
+  - "3.4"
 
 env:
-  - TOXENV=py25-1.3,py25-1.4
-  - TOXENV=py26-1.3,py26-1.4,py26-dev
-  - TOXENV=py27-1.3,py27-1.4,py27-dev
-  - TOXENV=docs
+  - DJANGO_VERSION=1.5
+  - DJANGO_VERSION=1.6
+  - DJANGO_VERSION=1.7
+  - DJANGO_VERSION=1.8
+  - DJANGO_VERSION=dev
+
+matrix:
+  allow_failures:
+    - env: DJANGO_VERSION=dev
+  exclude:
+    - env: DJANGO_VERSION=dev
+      python: "2.6"
+    - env: DJANGO_VERSION=1.8
+      python: "2.6"
+    - env: DJANGO_VERSION=1.7
+      python: "2.6"
+
+before_install:
+    - sudo apt-get install python-sphinx python3-sphinx
 
 # command to install dependencies
 install:
@@ -15,4 +33,4 @@ install:
 
 # command to run tests
 script:
-    - tox
+    - tox -e py${TRAVIS_PYTHON_VERSION/./}-${DJANGO_VERSION},docs

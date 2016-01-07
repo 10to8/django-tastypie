@@ -1,8 +1,8 @@
 .. _ref-content_types:
 
-==================================
-ContentTypes and GenricForeignKeys
-==================================
+===================================
+ContentTypes and GenericForeignKeys
+===================================
 
 `Content Types`_ and GenericForeignKeys are for relationships where the model on
 one end is not defined by the model's schema.
@@ -61,6 +61,10 @@ A simple ModelResource for this model might look like this::
         class Meta:
             resource_name = 'tagged_items'
             queryset = TaggedItem.objects.all()
+
+A ModelResource that is to be used as a relation to a GenericForeignKeyField
+must also be registered to the Api instance defined in your URLconf in order
+to provide a reverse uri for lookups.
 
 Like ToOneField, you must add your GenericForeignKey attribute to your
 ModelResource definition. It will not be added automatically like most other

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from django.http import HttpResponse
 
 
@@ -21,6 +22,16 @@ class NotRegistered(TastypieError):
 class NotFound(TastypieError):
     """
     Raised when the resource/object in question can't be found.
+    """
+    pass
+
+
+class Unauthorized(TastypieError):
+    """
+    Raised when the request object is not accessible to the user.
+
+    This is different than the ``tastypie.http.HttpUnauthorized`` & is handled
+    differently internally.
     """
     pass
 
@@ -71,7 +82,7 @@ class InvalidFilterError(BadRequest):
     pass
 
 
-class InvalidSortError(TastypieError):
+class InvalidSortError(BadRequest):
     """
     Raised when the end user attempts to sort on a field that has not be
     explicitly allowed.
@@ -90,7 +101,11 @@ class ImmediateHttpResponse(TastypieError):
         * for throttling
 
     """
-    response = HttpResponse("Nothing provided.")
+    _response = HttpResponse("Nothing provided.")
 
     def __init__(self, response):
-        self.response = response
+        self._response = response
+
+    @property
+    def response(self):
+        return self._response

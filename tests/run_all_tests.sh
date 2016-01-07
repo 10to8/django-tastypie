@@ -3,27 +3,49 @@
 PYTHONPATH=$PWD:$PWD/..${PYTHONPATH:+:$PYTHONPATH}
 export PYTHONPATH
 
-# complex
-ALL="core basic alphanumeric slashless namespaced related validation gis content_gfk"
+VERSION=`django-admin.py --version`
+arrIN=(${VERSION//./ })
+major=${arrIN[0]}
+minor=${arrIN[1]}
 
-if [ $# -eq 0 ]; then
-	TYPES=$ALL
-elif [ $1 == '-h' ]; then
-	echo "Valid arguments are: $ALL"
+#Don't run customuser tests if django's version is less than 1.5.
+if [ $major -lt '2' -a $minor -lt '5' ]; then
+  ALL="core basic alphanumeric slashless namespaced related validation gis content_gfk authorization"
 else
-	TYPES=$@
+  ALL="core customuser basic alphanumeric slashless namespaced related validation gis content_gfk authorization"
 fi
 
-for type in $TYPES; do
-	echo "** $type **"
+test_module='.tests'
+if [ $major -lt '2' -a $minor -lt '6' ]; then
+  test_module=''
+fi
 
-	if [ $type == 'related' ]; then
-		django-admin.py test ${type}_resource --settings=settings_$type
-		continue
-	elif [ $type == 'gis' ]; then
-		createdb -T template_postgis tastypie.db
-	fi
+if [ $# -eq 0 ]; then
+    PYTESTPATHS=$ALL
+elif [ $1 == '-h' ]; then
+    echo "Valid arguments are: $ALL"
+else
+    PYTESTPATHS=$@
+fi
 
-	django-admin.py test $type --settings=settings_$type
-	echo; echo
+for pytestpath in $PYTESTPATHS; do
+    IFS='.' read -r type type_remainder <<< "$pytestpath"
+    
+    echo "** $type **"
+    module_name=$type
+
+    if [ $type == 'related' ]; then
+        module_name=${module_name}_resource
+    elif [ $type == 'gis' ]; then
+        createdb -T template_postgis tastypie.db
+        spatialite tastypie-spatialite.db "SELECT InitSpatialMetaData();"
+    fi
+    
+    test_name=$module_name
+    if [ -n "$type_remainder" ]; then
+        test_name=$test_name.$type_remainder
+    fi
+
+    ./manage_$type.py test $test_name$test_module --traceback
+    echo; echo
 done
