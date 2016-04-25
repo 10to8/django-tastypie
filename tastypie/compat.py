@@ -1,3 +1,4 @@
+import django
 
 def get_module_name(meta):
     return getattr(meta, 'model_name', None) or getattr(meta, 'module_name')
