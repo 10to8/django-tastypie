@@ -1,5 +1,5 @@
 import operator
-
+from tastypie.compat import get_module_name
 
 class Authorization(object):
     """
@@ -73,7 +73,7 @@ class DjangoAuthorization(Authorization):
             return False
 
         for perm in permission_map[request.method]:
-            permission_codes.append(perm % (klass._meta.app_label, klass._meta.module_name))
+            permission_codes.append(perm % (klass._meta.app_label, get_module_name(klass._meta)))
 
         # User must be logged in to check permissions.
         if not hasattr(request, 'user'):

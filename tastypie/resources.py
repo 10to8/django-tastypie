@@ -24,6 +24,7 @@ from tastypie.throttle import BaseThrottle
 from tastypie.utils import is_valid_jsonp_callback_value, dict_strip_unicode_keys, trailing_slash
 from tastypie.utils.mime import determine_format, build_content_type
 from tastypie.validation import Validation
+from tastypie.compat import atomic_decorator
 
 from copy import copy
 
@@ -2049,7 +2050,7 @@ class ModelResource(Resource):
 
         obj.delete()
 
-    @transaction.commit_on_success()
+    @atomic_decorator()
     def patch_list(self, request, **kwargs):
         """
         An ORM-specific implementation of ``patch_list``.
