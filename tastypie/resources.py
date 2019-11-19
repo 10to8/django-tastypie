@@ -359,7 +359,7 @@ class Resource(object):
 
         urls += self.base_urls()
         urlpatterns = [
-            *urls
+            urls
         ]
         return urlpatterns
 
