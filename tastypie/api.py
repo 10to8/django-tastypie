@@ -109,7 +109,7 @@ class Api(object):
             urlpatterns += self.override_urls()
 
         urlpatterns += [
-            *pattern_list
+            pattern_list
         ]
         return urlpatterns
 
