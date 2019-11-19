@@ -358,10 +358,7 @@ class Resource(object):
             urls += self.override_urls()
 
         urls += self.base_urls()
-        urlpatterns = [
-            urls
-        ]
-        return urlpatterns
+        return urls
 
     def determine_format(self, request):
         """
