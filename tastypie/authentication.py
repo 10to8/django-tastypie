@@ -9,6 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.middleware.csrf import _sanitize_token, constant_time_compare
 from django.utils.translation import ugettext as _
 from tastypie.http import HttpUnauthorized
+from urlparse import urlparse
 
 try:
     from hashlib import sha1
