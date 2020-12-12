@@ -6,7 +6,7 @@ import re
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import datetime_safe
 import importlib
-from django.utils import datetime_safe, importlib
+from django.utils import datetime_safe
 from django.utils import six
 from tastypie.bundle import Bundle
 from tastypie.exceptions import ApiFieldError, NotFound
