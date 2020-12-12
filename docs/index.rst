@@ -14,6 +14,8 @@ interfaces.
    non_orm_data_sources
    tools
    testing
+   compatibility_notes
+   python3
 
    resources
    bundles
@@ -21,7 +23,8 @@ interfaces.
    fields
    caching
    validation
-   authentication_authorization
+   authentication
+   authorization
    serialization
    throttling
    paginator
@@ -32,6 +35,7 @@ interfaces.
    debugging
    who_uses
    contributing
+   release_notes/index
 
 
 Getting Help
@@ -88,19 +92,15 @@ the necessary bits via the included ``requirements.txt``:
 Required
 --------
 
-* Python 2.6+
-* Django 1.3+
-* mimeparse 0.1.3+ (http://code.google.com/p/mimeparse/)
-
-  * Older versions will work, but their behavior on JSON/JSONP is a touch wonky.
-
-* dateutil (http://labix.org/python-dateutil) >= 1.5, < 2.0
+* Python 2.6+ or Python 3.3+
+* Django 1.5+
+* dateutil (http://labix.org/python-dateutil) >= 2.1
 
 Optional
 --------
 
 * python_digest (https://bitbucket.org/akoha/python-digest/)
-* lxml (http://lxml.de/) if using the XML serializer
+* lxml (http://lxml.de/) and defusedxml (https://bitbucket.org/tiran/defusedxml) if using the XML serializer
 * pyyaml (http://pyyaml.org/) if using the YAML serializer
 * biplist (http://explorapp.com/biplist/) if using the binary plist serializer
 

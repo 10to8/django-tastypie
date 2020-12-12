@@ -83,32 +83,32 @@ class BasicAuthenticationTestCase(TestCase):
         self.assertEqual(isinstance(auth.is_authenticated(request), HttpUnauthorized), True)
 
         # No password.
-        request.META['HTTP_AUTHORIZATION'] = base64.b64encode('daniel')
+        request.META['HTTP_AUTHORIZATION'] = base64.b64encode('daniel'.encode('utf-8')).decode('utf-8')
         self.assertEqual(isinstance(auth.is_authenticated(request), HttpUnauthorized), True)
 
         # Wrong user/password.
-        request.META['HTTP_AUTHORIZATION'] = base64.b64encode('daniel:pass')
+        request.META['HTTP_AUTHORIZATION'] = base64.b64encode('daniel:pass'.encode('utf-8')).decode('utf-8')
         self.assertEqual(isinstance(auth.is_authenticated(request), HttpUnauthorized), True)
 
         # Correct user/password.
         john_doe = User.objects.get(username='johndoe')
         john_doe.set_password('pass')
         john_doe.save()
-        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('johndoe:pass')
+        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('johndoe:pass'.encode('utf-8')).decode('utf-8')
         self.assertEqual(auth.is_authenticated(request), True)
 
         # Regression: Password with colon.
         john_doe = User.objects.get(username='johndoe')
         john_doe.set_password('pass:word')
         john_doe.save()
-        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('johndoe:pass:word')
+        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('johndoe:pass:word'.encode('utf-8')).decode('utf-8')
         self.assertEqual(auth.is_authenticated(request), True)
 
         # Capitalization shouldn't matter.
         john_doe = User.objects.get(username='johndoe')
         john_doe.set_password('pass:word')
         john_doe.save()
-        request.META['HTTP_AUTHORIZATION'] = 'bAsIc %s' % base64.b64encode('johndoe:pass:word')
+        request.META['HTTP_AUTHORIZATION'] = 'bAsIc %s' % base64.b64encode('johndoe:pass:word'.encode('utf-8')).decode('utf-8')
         self.assertEqual(auth.is_authenticated(request), True)
 
     def test_check_active_true(self):
@@ -118,7 +118,7 @@ class BasicAuthenticationTestCase(TestCase):
         bob_doe = User.objects.get(username='bobdoe')
         bob_doe.set_password('pass')
         bob_doe.save()
-        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('bobdoe:pass')
+        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('bobdoe:pass'.encode('utf-8')).decode('utf-8')
         self.assertFalse(auth.is_authenticated(request))
 
     def test_check_active_false(self):
@@ -128,7 +128,7 @@ class BasicAuthenticationTestCase(TestCase):
         bob_doe = User.objects.get(username='bobdoe')
         bob_doe.set_password('pass')
         bob_doe.save()
-        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('bobdoe:pass')
+        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('bobdoe:pass'.encode('utf-8')).decode('utf-8')
         self.assertTrue(auth.is_authenticated(request))
 
 
@@ -320,23 +320,23 @@ class DigestAuthenticationTestCase(TestCase):
         self.assertEqual(isinstance(auth_request, HttpUnauthorized), True)
 
         # No password.
-        request.META['HTTP_AUTHORIZATION'] = base64.b64encode('daniel')
+        request.META['HTTP_AUTHORIZATION'] = base64.b64encode('daniel'.encode('utf-8')).decode('utf-8')
         auth_request = auth.is_authenticated(request)
         self.assertEqual(isinstance(auth_request, HttpUnauthorized), True)
 
         # Wrong user/password.
-        request.META['HTTP_AUTHORIZATION'] = base64.b64encode('daniel:pass')
+        request.META['HTTP_AUTHORIZATION'] = base64.b64encode('daniel:pass'.encode('utf-8')).decode('utf-8')
         auth_request = auth.is_authenticated(request)
         self.assertEqual(isinstance(auth_request, HttpUnauthorized), True)
 
         # Correct user/password.
         john_doe = User.objects.get(username='johndoe')
         request.META['HTTP_AUTHORIZATION'] = python_digest.build_authorization_request(
-            john_doe.username,
-            request.method,
-            '/', # uri
-            1,   # nonce_count
-            digest_challenge=auth_request['WWW-Authenticate'],
+            username=john_doe.username,
+            method=request.method,
+            uri='/',
+            nonce_count=1,
+            digest_challenge=python_digest.parse_digest_challenge(auth_request['WWW-Authenticate']),
             password=john_doe.api_key.key
         )
         auth_request = auth.is_authenticated(request)
@@ -350,11 +350,11 @@ class DigestAuthenticationTestCase(TestCase):
         create_api_key(User, instance=bob_doe, created=True)
         auth_request = auth.is_authenticated(request)
         request.META['HTTP_AUTHORIZATION'] = python_digest.build_authorization_request(
-            bob_doe.username,
-            request.method,
-            '/', # uri
-            1,   # nonce_count
-            digest_challenge=auth_request['WWW-Authenticate'],
+            username=bob_doe.username,
+            method=request.method,
+            uri='/',
+            nonce_count=1,
+            digest_challenge=python_digest.parse_digest_challenge(auth_request['WWW-Authenticate']),
             password=bob_doe.api_key.key
         )
         auth_request = auth.is_authenticated(request)
@@ -368,109 +368,153 @@ class DigestAuthenticationTestCase(TestCase):
         create_api_key(User, instance=bob_doe, created=True)
         auth_request = auth.is_authenticated(request)
         request.META['HTTP_AUTHORIZATION'] = python_digest.build_authorization_request(
-            bob_doe.username,
-            request.method,
-            '/', # uri
-            1,   # nonce_count
-            digest_challenge=auth_request['WWW-Authenticate'],
+            username=bob_doe.username,
+            method=request.method,
+            uri='/',
+            nonce_count=1,
+            digest_challenge=python_digest.parse_digest_challenge(auth_request['WWW-Authenticate']),
             password=bob_doe.api_key.key
         )
         auth_request = auth.is_authenticated(request)
         self.assertTrue(auth_request, True)
 
 
-class OAuthAuthenticationTestCase(TestCase):
-    fixtures = ['note_testdata.json']
+if oauth_provider is not None:
+    class OAuthAuthenticationTestCase(TestCase):
+        fixtures = ['note_testdata.json']
 
-    def setUp(self):
-        super(OAuthAuthenticationTestCase, self).setUp()
+        def setUp(self):
+            super(OAuthAuthenticationTestCase, self).setUp()
 
-        self.request = HttpRequest()
-        self.request.META['SERVER_NAME'] = 'testsuite'
-        self.request.META['SERVER_PORT'] = '8080'
-        self.request.REQUEST = self.request.GET = {}
-        self.request.method = "GET"
+            self.request = HttpRequest()
+            self.request.META['SERVER_NAME'] = 'testsuite'
+            self.request.META['SERVER_PORT'] = '8080'
+            self.request.REQUEST = self.request.GET = {}
+            self.request.method = "GET"
 
-        from oauth_provider.models import Consumer, Token, Resource
-        self.user = User.objects.create_user('daniel', 'test@example.com', 'password')
-        self.user_inactive = User.objects.get(username='bobdoe')
-        self.resource, _ = Resource.objects.get_or_create(url='test', defaults={
-            'name': 'Test Resource'
-        })
-        self.consumer, _ = Consumer.objects.get_or_create(key='123', defaults={
-            'name': 'Test',
-            'description': 'Testing...'
-        })
-        self.token, _ = Token.objects.get_or_create(key='foo', token_type=Token.ACCESS, defaults={
-            'consumer': self.consumer,
-            'resource': self.resource,
-            'secret': '',
-            'user': self.user,
-        })
-        self.token_inactive, _ = Token.objects.get_or_create(key='bar', token_type=Token.ACCESS, defaults={
-            'consumer': self.consumer,
-            'resource': self.resource,
-            'secret': '',
-            'user': self.user_inactive,
-        })
+            from oauth_provider.models import Consumer, Token, Resource
+            self.user = User.objects.create_user('daniel', 'test@example.com', 'password')
+            self.user_inactive = User.objects.get(username='bobdoe')
+            self.resource, _ = Resource.objects.get_or_create(url='test', defaults={
+                'name': 'Test Resource'
+            })
+            self.consumer, _ = Consumer.objects.get_or_create(key='123', defaults={
+                'name': 'Test',
+                'description': 'Testing...'
+            })
+            self.token, _ = Token.objects.get_or_create(key='foo', token_type=Token.ACCESS, defaults={
+                'consumer': self.consumer,
+                'resource': self.resource,
+                'secret': '',
+                'user': self.user,
+            })
+            self.token_inactive, _ = Token.objects.get_or_create(key='bar', token_type=Token.ACCESS, defaults={
+                'consumer': self.consumer,
+                'resource': self.resource,
+                'secret': '',
+                'user': self.user_inactive,
+            })
 
-    def test_is_authenticated(self):
-        auth = OAuthAuthentication()
+        def test_is_authenticated(self):
+            auth = OAuthAuthentication()
 
-        # Invalid request.
-        resp = auth.is_authenticated(self.request)
-        self.assertEqual(resp.status_code, 401)
+            # Invalid request.
+            resp = auth.is_authenticated(self.request)
+            self.assertEqual(resp.status_code, 401)
 
-        # No username/api_key details should fail.
-        self.request.REQUEST = self.request.GET = {
-            'oauth_consumer_key': '123',
-            'oauth_nonce': 'abc',
-            'oauth_signature': '&',
-            'oauth_signature_method': 'PLAINTEXT',
-            'oauth_timestamp': str(int(time.time())),
-            'oauth_token': 'foo',
-        }
-        self.request.META['Authorization'] = 'OAuth ' + ','.join([key+'='+value for key, value in self.request.REQUEST.items()])
-        resp = auth.is_authenticated(self.request)
-        self.assertEqual(resp, True)
-        self.assertEqual(self.request.user.pk, self.user.pk)
+            # No username/api_key details should fail.
+            self.request.REQUEST = self.request.GET = {
+                'oauth_consumer_key': '123',
+                'oauth_nonce': 'abc',
+                'oauth_signature': '&',
+                'oauth_signature_method': 'PLAINTEXT',
+                'oauth_timestamp': str(int(time.time())),
+                'oauth_token': 'foo',
+            }
+            self.request.META['Authorization'] = 'OAuth ' + ','.join([key+'='+value for key, value in self.request.REQUEST.items()])
+            resp = auth.is_authenticated(self.request)
+            self.assertEqual(resp, True)
+            self.assertEqual(self.request.user.pk, self.user.pk)
 
-    def test_check_active_true(self):
-        auth = OAuthAuthentication()
+        def test_check_active_true(self):
+            auth = OAuthAuthentication()
 
-        # No username/api_key details should fail.
-        self.request.REQUEST = self.request.GET = {
-            'oauth_consumer_key': '123',
-            'oauth_nonce': 'abc',
-            'oauth_signature': '&',
-            'oauth_signature_method': 'PLAINTEXT',
-            'oauth_timestamp': str(int(time.time())),
-            'oauth_token': 'bar',
-        }
-        self.request.META['Authorization'] = 'OAuth ' + ','.join([key+'='+value for key, value in self.request.REQUEST.items()])
-        resp = auth.is_authenticated(self.request)
-        self.assertFalse(resp)
+            # No username/api_key details should fail.
+            self.request.REQUEST = self.request.GET = {
+                'oauth_consumer_key': '123',
+                'oauth_nonce': 'abc',
+                'oauth_signature': '&',
+                'oauth_signature_method': 'PLAINTEXT',
+                'oauth_timestamp': str(int(time.time())),
+                'oauth_token': 'bar',
+            }
+            self.request.META['Authorization'] = 'OAuth ' + ','.join([key+'='+value for key, value in self.request.REQUEST.items()])
+            resp = auth.is_authenticated(self.request)
+            self.assertFalse(resp)
 
-    def test_check_active_false(self):
-        auth = OAuthAuthentication(require_active=False)
+        def test_check_active_false(self):
+            auth = OAuthAuthentication(require_active=False)
 
-        # No username/api_key details should fail.
-        self.request.REQUEST = self.request.GET = {
-            'oauth_consumer_key': '123',
-            'oauth_nonce': 'abc',
-            'oauth_signature': '&',
-            'oauth_signature_method': 'PLAINTEXT',
-            'oauth_timestamp': str(int(time.time())),
-            'oauth_token': 'bar',
-        }
-        self.request.META['Authorization'] = 'OAuth ' + ','.join([key+'='+value for key, value in self.request.REQUEST.items()])
-        resp = auth.is_authenticated(self.request)
-        self.assertTrue(resp)
-        self.assertEqual(self.request.user.pk, self.user_inactive.pk)
+            # No username/api_key details should fail.
+            self.request.REQUEST = self.request.GET = {
+                'oauth_consumer_key': '123',
+                'oauth_nonce': 'abc',
+                'oauth_signature': '&',
+                'oauth_signature_method': 'PLAINTEXT',
+                'oauth_timestamp': str(int(time.time())),
+                'oauth_token': 'bar',
+            }
+            self.request.META['Authorization'] = 'OAuth ' + ','.join([key+'='+value for key, value in self.request.REQUEST.items()])
+            resp = auth.is_authenticated(self.request)
+            self.assertTrue(resp)
+            self.assertEqual(self.request.user.pk, self.user_inactive.pk)
 
 
 class MultiAuthenticationTestCase(TestCase):
     fixtures = ['note_testdata.json']
+
+    def test_apikey_and_authentication_enforce_user(self):
+        session_auth = SessionAuthentication()
+        api_key_auth = ApiKeyAuthentication()
+        auth = MultiAuthentication(api_key_auth, session_auth)
+        john_doe = User.objects.get(username='johndoe')
+        request1 = HttpRequest()
+        request2 = HttpRequest()
+        request3 = HttpRequest()
+
+        request1.method = 'POST'
+        request1.META = {
+            'HTTP_X_CSRFTOKEN': 'abcdef1234567890abcdef1234567890'
+        }
+        request1.COOKIES = {
+            settings.CSRF_COOKIE_NAME: 'abcdef1234567890abcdef1234567890'
+        }
+        request1.user = john_doe
+
+        request2.POST['username'] = 'janedoe'
+        request2.POST['api_key'] = 'invalid key'
+
+        request3.method = 'POST'
+        request3.META = {
+            'HTTP_X_CSRFTOKEN': 'abcdef1234567890abcdef1234567890'
+        }
+        request3.COOKIES = {
+            settings.CSRF_COOKIE_NAME: 'abcdef1234567890abcdef1234567890'
+        }
+        request3.user = john_doe
+        request3.POST['username'] = 'janedoe'
+        request3.POST['api_key'] = 'invalid key'
+
+        #session auth should pass if since john_doe is logged in
+        self.assertTrue(session_auth.is_authenticated(request1))
+        #api key auth should fail because of invalid api key
+        self.assertEqual(isinstance(api_key_auth.is_authenticated(request2), HttpUnauthorized), True)
+
+        #multi auth shouldn't change users if api key auth fails
+        #multi auth passes since session auth is valid
+        self.assertEqual(request3.user.username, 'johndoe')
+        self.assertTrue(auth.is_authenticated(request3))
+        self.assertEqual(request3.user.username, 'johndoe')
 
     def test_apikey_and_authentication(self):
         auth = MultiAuthentication(ApiKeyAuthentication(), Authentication())
@@ -534,7 +578,7 @@ class MultiAuthenticationTestCase(TestCase):
         john_doe = User.objects.get(username='johndoe')
         john_doe.set_password('pass')
         john_doe.save()
-        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('johndoe:pass')
+        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % base64.b64encode('johndoe:pass'.encode('utf-8')).decode('utf-8')
         self.assertEqual(auth.is_authenticated(request), True)
 
 

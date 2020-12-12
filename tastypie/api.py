@@ -1,8 +1,9 @@
+from __future__ import unicode_literals
 import warnings
-from django.conf.urls import *
+from django.conf.urls import url, patterns, include
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from tastypie.exceptions import NotRegistered, BadRequest
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash, is_valid_jsonp_callback_value
@@ -21,10 +22,11 @@ class Api(object):
     this is done with version numbers (i.e. ``v1``, ``v2``, etc.) but can
     be named any string.
     """
-    def __init__(self, api_name="v1"):
+    def __init__(self, api_name="v1", serializer_class=Serializer):
         self.api_name = api_name
         self._registry = {}
         self._canonicals = {}
+        self.serializer = serializer_class()
 
     def register(self, resource, canonical=True):
         """
@@ -72,7 +74,10 @@ class Api(object):
 
     def wrap_view(self, view):
         def wrapper(request, *args, **kwargs):
-            return getattr(self, view)(request, *args, **kwargs)
+            try:
+                return getattr(self, view)(request, *args, **kwargs)
+            except BadRequest:
+                return HttpResponseBadRequest()
         return wrapper
 
     def override_urls(self):
@@ -104,9 +109,10 @@ class Api(object):
 
         urlpatterns = self.prepend_urls()
 
-        if self.override_urls():
-            #warnings.warn("'override_urls' is a deprecated method & will be removed by v1.0.0. Please rename your method to ``prepend_urls``.")
-            urlpatterns += self.override_urls()
+        overridden_urls = self.override_urls()
+        if overridden_urls:
+            warnings.warn("'override_urls' is a deprecated method & will be removed by v1.0.0. Please rename your method to ``prepend_urls``.")
+            urlpatterns += overridden_urls
 
         urlpatterns += pattern_list
 
@@ -118,7 +124,6 @@ class Api(object):
         A view that returns a serialized list of all resources registers
         to the ``Api``. Useful for discovery.
         """
-        serializer = Serializer()
         available_resources = {}
 
         if api_name is None:
@@ -136,7 +141,8 @@ class Api(object):
                 }),
             }
 
-        desired_format = determine_format(request, serializer)
+        desired_format = determine_format(request, self.serializer)
+
         options = {}
 
         if 'text/javascript' in desired_format:
@@ -147,7 +153,7 @@ class Api(object):
 
             options['callback'] = callback
 
-        serialized = serializer.serialize(available_resources, desired_format, options)
+        serialized = self.serializer.serialize(available_resources, desired_format, options)
         return HttpResponse(content=serialized, content_type=build_content_type(desired_format))
 
     def _build_reverse_url(self, name, args=None, kwargs=None):
@@ -163,8 +169,8 @@ class NamespacedApi(Api):
     """
     An API subclass that respects Django namespaces.
     """
-    def __init__(self, api_name="v1", urlconf_namespace=None):
-        super(NamespacedApi, self).__init__(api_name=api_name)
+    def __init__(self, api_name="v1", urlconf_namespace=None, **kwargs):
+        super(NamespacedApi, self).__init__(api_name=api_name, **kwargs)
         self.urlconf_namespace = urlconf_namespace
 
     def register(self, resource, canonical=True):

@@ -50,15 +50,6 @@ To power their mobile (iPhone/Android/Playbook) applications.
 * http://www.politifact.com/mobile/
 
 
-Crate
------
-
-Crate is a PyPI mirror/replacement. It's using Tastypie to provide a convenient
-REST API.
-
-* https://crate.io/api/v1/
-
-
 LocalWiki
 ---------
 
@@ -77,3 +68,10 @@ I-Am-CC.org
 under a Creative Commons license.
 
 * http://i-am-cc.org/api/?format=json
+
+Dbpatterns
+----------
+
+Dbpatterns is a service that allows you to create, share, explore database models on the web.
+
+* http://dbpatterns.com

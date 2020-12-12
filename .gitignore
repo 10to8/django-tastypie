@@ -11,3 +11,5 @@ tests/tastypie.db
 .tox
 .project
 .pydevproject
+env
+env3

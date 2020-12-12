@@ -27,6 +27,7 @@ class TaggableTag(models.Model):
             related_name='taggabletags',
             null=True, blank=True, # needed at creation time
     )
+    extra = models.IntegerField(default=0) #extra data about the relationship
 
 
 # Tags to Taggable model through explicit M2M table
@@ -55,3 +56,70 @@ class ExtraData(models.Model):
         return u"%s" % (self.name)
 
 
+class Address(models.Model):
+    line = models.CharField(max_length=32)
+
+    def __unicode__(self):
+        return u"%s" % (self.line)
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=32)
+    address = models.ForeignKey(Address, null=True)
+
+    def __unicode__(self):
+        return u"%s" % (self.name)
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=32)
+    producer = models.ForeignKey(Company, related_name="products")
+
+    def __unicode__(self):
+        return u"%s" % (self.name)
+
+
+class Person(models.Model):
+    name = models.CharField(max_length=32)
+    company = models.ForeignKey(Company, related_name="employees", null=True)
+
+    def __unicode__(self):
+        return u"%s" % (self.name)
+
+
+class DogHouse(models.Model):
+    color = models.CharField(max_length=32)
+
+    def __unicode__(self):
+        return u"%s" % (self.color)
+
+
+class Dog(models.Model):
+    name = models.CharField(max_length=32)
+    owner = models.ForeignKey(Person, related_name="dogs")
+    house = models.ForeignKey(DogHouse, related_name="dogs", null=True)
+
+    def __unicode__(self):
+        return u"%s" % (self.name)
+
+class Bone(models.Model):
+    dog = models.ForeignKey(Dog, related_name='bones')
+    color = models.CharField(max_length=32)
+
+    def __unicode__(self):
+        return u"%s" % (self.color)
+
+class Label(models.Model):
+    name = models.CharField(max_length=32)
+
+class Post(models.Model):
+    name = models.CharField(max_length=200)
+    label = models.ManyToManyField(Label, null=True)
+
+
+class Job(models.Model):
+    name = models.CharField(max_length=200)
+
+class Payment(models.Model):
+    scheduled = models.DateTimeField()
+    job = models.OneToOneField(Job, related_name="payment", null=True)

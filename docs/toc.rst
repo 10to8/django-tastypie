@@ -11,6 +11,8 @@ Table Of Contents
    non_orm_data_sources
    tools
    testing
+   compatibility_notes
+   python3
 
    resources
    bundles
@@ -18,11 +20,13 @@ Table Of Contents
    fields
    caching
    validation
-   authentication_authorization
+   authentication
+   authorization
    serialization
    throttling
    paginator
    geodjango
+   content_types
 
    cookbook
    debugging
