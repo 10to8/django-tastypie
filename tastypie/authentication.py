@@ -10,8 +10,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.middleware.csrf import _sanitize_token, constant_time_compare
 from django.utils.translation import ugettext as _
 from tastypie.http import HttpUnauthorized
-from urlparse import urlparse
 from tastypie.compat import User, username_field
+from six.moves.urllib import urlparse
 
 try:
     from hashlib import sha1
@@ -33,7 +33,7 @@ try:
     import oauth_provider
 except ImportError:
     oauth_provider = None
-    
+
 def same_origin(url1, url2):
     """
     Checks if two URLs are 'same-origin'
@@ -48,7 +48,7 @@ def same_origin(url1, url2):
         o2 = (p2.scheme, p2.hostname, p2.port or PROTOCOL_TO_PORT[p2.scheme])
         return o1 == o2
     except (ValueError, KeyError):
-        return False    
+        return False   
 
 class Authentication(object):
     """
