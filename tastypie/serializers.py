@@ -6,7 +6,6 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.serializers import json
 import simplejson
-from django.utils import simplejson
 from django.utils import six
 from django.utils.encoding import force_text, smart_bytes
 
