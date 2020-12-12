@@ -184,7 +184,7 @@ class Resource(six.with_metaclass(DeclarativeMetaclass)):
     def __init__(self, api_name=None):
 
         #self.fields = deepcopy(self.base_fields)
-        self.fields = {k: copy(v) for k, v in self.base_fields.iteritems()}
+        self.fields = {k: copy(v) for k, v in self.base_fields.items()}
 
         if not api_name is None:
             self._meta.api_name = api_name
