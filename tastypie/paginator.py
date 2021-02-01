@@ -1,6 +1,10 @@
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import with_statement
 from django.conf import settings
 from tastypie.exceptions import BadRequest
-from urllib import urlencode
+from six.moves.urllib.parse import urlencode
+import six
 
 
 class Paginator(object):
@@ -167,7 +171,7 @@ class Paginator(object):
             request_params = {}
 
             for k, v in self.request_data.items():
-                if isinstance(v, unicode):
+                if isinstance(v, six.text_type):
                     request_params[k] = v.encode('utf-8')
                 else:
                     request_params[k] = v

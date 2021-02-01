@@ -1,3 +1,6 @@
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import with_statement
 import base64
 import hmac
 import time
@@ -9,7 +12,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.middleware.csrf import _sanitize_token, constant_time_compare
 from django.utils.translation import ugettext as _
 from tastypie.http import HttpUnauthorized
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 try:
     from hashlib import sha1
@@ -439,7 +442,7 @@ class OAuthAuthentication(Authentication):
 
             try:
                 self.validate_token(request, consumer, token)
-            except oauth2.Error, e:
+            except oauth2.Error as e:
                 return oauth_provider.utils.send_oauth_error(e)
 
             if consumer and token:

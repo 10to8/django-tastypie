@@ -1,7 +1,8 @@
 # See COPYING file in this directory.
 # Some code originally from django-boundaryservice
 
-from urllib import unquote
+from __future__ import absolute_import
+from six.moves.urllib.parse import unquote
 
 from django.contrib.gis.db.models import GeometryField
 import simplejson

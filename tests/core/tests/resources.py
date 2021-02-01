@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import base64
 import copy
 import datetime
@@ -586,7 +587,7 @@ class ResourceTestCase(TestCase):
         try:
             basic.method_check(request)
             self.fail("Should have thrown an exception.")
-        except ImmediateHttpResponse, e:
+        except ImmediateHttpResponse as e:
             self.assertEqual(e.response['Allow'], '')
 
         # Not an allowed request.
@@ -595,7 +596,7 @@ class ResourceTestCase(TestCase):
         try:
             basic.method_check(request, allowed=['post'])
             self.fail("Should have thrown an exception.")
-        except ImmediateHttpResponse, e:
+        except ImmediateHttpResponse as e:
             self.assertEqual(e.response['Allow'], 'POST')
 
         # Allowed (single).
@@ -616,7 +617,7 @@ class ResourceTestCase(TestCase):
         try:
             basic.method_check(request, allowed=['get', 'put', 'delete', 'patch'])
             self.fail("Should have thrown an exception.")
-        except ImmediateHttpResponse, e:
+        except ImmediateHttpResponse as e:
             self.assertEqual(e.response['Allow'], 'GET,PUT,DELETE,PATCH')
 
         # Allowed (multiple).
@@ -1616,7 +1617,7 @@ class ModelResourceTestCase(TestCase):
         try:
             resp = resource.get_list(request)
             self.fail()
-        except BadRequest, e:
+        except BadRequest as e:
             pass
 
         # Try again with ``wrap_view`` for sanity.
@@ -1628,7 +1629,7 @@ class ModelResourceTestCase(TestCase):
         try:
             resp = resource.get_list(request)
             self.fail()
-        except BadRequest, e:
+        except BadRequest as e:
             pass
 
         # Then an out of range limit.
@@ -1636,7 +1637,7 @@ class ModelResourceTestCase(TestCase):
         try:
             resp = resource.get_list(request)
             self.fail()
-        except BadRequest, e:
+        except BadRequest as e:
             pass
 
         # Valid slice.
@@ -2177,7 +2178,7 @@ class ModelResourceTestCase(TestCase):
         try:
             resp = resource.dispatch_detail(request, pk=1)
             self.fail()
-        except BadRequest, e:
+        except BadRequest as e:
             pass
 
         # Try again with ``wrap_view`` for sanity.
@@ -2344,7 +2345,7 @@ class ModelResourceTestCase(TestCase):
         try:
             resp = resource.dispatch('list', request)
             self.fail()
-        except ImmediateHttpResponse, e:
+        except ImmediateHttpResponse as e:
             self.assertEqual(e.response.status_code, 429)
             self.assertEqual(len(cache.get('noaddr_nohost_accesses')), 2)
 
@@ -2352,7 +2353,7 @@ class ModelResourceTestCase(TestCase):
         try:
             resp = resource.dispatch('list', request)
             self.fail()
-        except ImmediateHttpResponse, e:
+        except ImmediateHttpResponse as e:
             self.assertEqual(e.response.status_code, 429)
             self.assertEqual(len(cache.get('noaddr_nohost_accesses')), 2)
 
@@ -2958,13 +2959,13 @@ class ModelResourceTestCase(TestCase):
         try:
             too_many = ponr.obj_get(request=empty_request, is_active=True, pk__gte=1)
             self.fail()
-        except MultipleObjectsReturned, e:
+        except MultipleObjectsReturned as e:
             self.assertEqual(str(e), "More than 'Note' matched 'is_active=True, pk__gte=1'.")
 
         try:
             too_many = ponr.obj_get(request=empty_request, pk=1000000)
             self.fail()
-        except Note.DoesNotExist, e:
+        except Note.DoesNotExist as e:
             self.assertEqual(str(e), "Couldn't find an instance of 'Note' which matched 'pk=1000000'.")
 
     def test_browser_cache(self):
@@ -3071,7 +3072,7 @@ class BasicAuthResourceTestCase(TestCase):
         try:
             resp = resource.dispatch_list(request)
             self.fail()
-        except ImmediateHttpResponse, e:
+        except ImmediateHttpResponse as e:
             self.assertEqual(e.response.status_code, 401)
 
         # Try again with ``wrap_view`` for sanity.
@@ -3095,7 +3096,7 @@ class BasicAuthResourceTestCase(TestCase):
         try:
             resp = resource.dispatch_detail(request, pk=1)
             self.fail()
-        except ImmediateHttpResponse, e:
+        except ImmediateHttpResponse as e:
             self.assertEqual(e.response.status_code, 401)
 
         # Try again with ``wrap_view`` for sanity.

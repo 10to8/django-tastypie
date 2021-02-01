@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+from __future__ import absolute_import
 from __future__ import with_statement
 import logging
 import warnings
@@ -26,6 +28,8 @@ from tastypie.utils.mime import determine_format, build_content_type
 from tastypie.validation import Validation
 
 from copy import copy
+import six
+from six.moves import map
 
 try:
     set
@@ -109,7 +113,7 @@ class ResourceOptions(object):
         if overrides.get('detail_allowed_methods', None) is None:
             overrides['detail_allowed_methods'] = allowed_methods
 
-        return object.__new__(type('ResourceOptions', (cls,), overrides))
+        return object.__new__(type(b'ResourceOptions', (cls,), overrides))
 
 
 class DeclarativeMetaclass(type):
@@ -131,7 +135,7 @@ class DeclarativeMetaclass(type):
         except NameError:
             pass
 
-        for field_name, obj in attrs.items():
+        for field_name, obj in list(attrs.items()):
             # Look for ``dehydrated_type`` instead of doing ``isinstance``,
             # which can break down if Tastypie is re-namespaced as something
             # else.
@@ -165,7 +169,7 @@ class DeclarativeMetaclass(type):
         return new_class
 
 
-class Resource(object):
+class Resource(six.with_metaclass(DeclarativeMetaclass, object)):
     """
     Handles the data, request dispatch and responding to requests.
 
@@ -176,12 +180,11 @@ class Resource(object):
     This class tries to be non-model specific, so it can be hooked up to other
     data sources, such as search results, files, other data, etc.
     """
-    __metaclass__ = DeclarativeMetaclass
 
     def __init__(self, api_name=None):
 
         #self.fields = deepcopy(self.base_fields)
-        self.fields = {k: copy(v) for k, v in self.base_fields.iteritems()}
+        self.fields = {k: copy(v) for k, v in six.iteritems(self.base_fields)}
 
         if not api_name is None:
             self._meta.api_name = api_name
@@ -231,13 +234,13 @@ class Resource(object):
                     patch_cache_control(response, no_cache=True)
 
                 return response
-            except (BadRequest, fields.ApiFieldError), e:
+            except (BadRequest, fields.ApiFieldError) as e:
                 return http.HttpBadRequest(e.args[0])
-            except (UniqueConstraint), e:
+            except (UniqueConstraint) as e:
                 return http.HttpConflict(e.args[0])
-            except ValidationError, e:
+            except ValidationError as e:
                 return http.HttpBadRequest(', '.join(e.messages))
-            except Exception, e:
+            except Exception as e:
                 if hasattr(e, 'response'):
                     return e.response
 
@@ -273,11 +276,11 @@ class Resource(object):
             response_code = 404
 
         from core.lib.logger import tastypie_logger
-        tastypie_logger.exception("TastyPie Error: '%s', traceback: '%s' " % (unicode(exception), the_trace))
+        tastypie_logger.exception("TastyPie Error: '%s', traceback: '%s' " % (six.text_type(exception), the_trace))
 
         if settings.DEBUG or getattr(settings, 'TASTYPIE_FULL_DEBUG', False):
             data = {
-                "error_message": unicode(exception),
+                "error_message": six.text_type(exception),
                 "traceback": the_trace,
             }
             desired_format = self.determine_format(request)
@@ -537,7 +540,7 @@ class Resource(object):
             allowed = []
 
         request_method = request.method.lower()
-        allows = ','.join(map(str.upper, allowed))
+        allows = ','.join([s.upper() for s in allowed])
 
         if request_method == "options":
             response = HttpResponse(allows)
@@ -1528,7 +1531,7 @@ class ModelDeclarativeMetaclass(DeclarativeMetaclass):
         new_class = super(ModelDeclarativeMetaclass, cls).__new__(cls, name, bases, attrs)
         include_fields = getattr(new_class._meta, 'fields', [])
         excludes = getattr(new_class._meta, 'excludes', [])
-        field_names = new_class.base_fields.keys()
+        field_names = list(new_class.base_fields.keys())
 
         for field_name in field_names:
             if field_name == 'resource_uri':
@@ -1552,7 +1555,7 @@ class ModelDeclarativeMetaclass(DeclarativeMetaclass):
         return new_class
 
 
-class ModelResource(Resource):
+class ModelResource(six.with_metaclass(ModelDeclarativeMetaclass, Resource)):
     """
     A subclass of ``Resource`` designed to work with Django's ``Models``.
 
@@ -1562,7 +1565,6 @@ class ModelResource(Resource):
     Given that it is aware of Django's ORM, it also handles the CRUD data
     operations of the resource.
     """
-    __metaclass__ = ModelDeclarativeMetaclass
 
     @classmethod
     def should_skip_field(cls, field):
@@ -1766,12 +1768,12 @@ class ModelResource(Resource):
             # Get the possible query terms from the current QuerySet.
             if hasattr(self._meta.queryset.query.query_terms, 'keys'):
                 # Django 1.4 & below compatibility.
-                query_terms = self._meta.queryset.query.query_terms.keys()
+                query_terms = list(self._meta.queryset.query.query_terms.keys())
             else:
                 # Django 1.5+.
                 query_terms = self._meta.queryset.query.query_terms
         else:
-            query_terms = QUERY_TERMS.keys()
+            query_terms = list(QUERY_TERMS.keys())
 
         for filter_expr, value in filters.items():
             filter_bits = filter_expr.split(LOOKUP_SEP)
@@ -2092,7 +2094,7 @@ class ModelResource(Resource):
             if field_object.readonly:
                 continue
 
-            if field_object.blank and not bundle.data.has_key(field_name):
+            if field_object.blank and field_name not in bundle.data:
                 continue
 
             # Get the object.
@@ -2135,7 +2137,7 @@ class ModelResource(Resource):
             # Get the manager.
             related_mngr = None
 
-            if isinstance(field_object.attribute, basestring):
+            if isinstance(field_object.attribute, six.string_types):
                 related_mngr = getattr(bundle.obj, field_object.attribute)
             elif callable(field_object.attribute):
                 related_mngr = field_object.attribute(bundle)

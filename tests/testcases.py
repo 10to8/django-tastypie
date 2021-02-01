@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import socket
 import threading
 
@@ -42,7 +43,7 @@ class TestServerThread(threading.Thread):
             httpd = StoppableWSGIServer(server_address, basehttp.WSGIRequestHandler)
             httpd.set_app(handler)
             self.started.set()
-        except basehttp.WSGIServerException, e:
+        except basehttp.WSGIServerException as e:
             self.error = e
             self.started.set()
             return

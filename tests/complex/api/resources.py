@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.contrib.auth.models import User, Group
 from django.contrib.comments.models import Comment
 from tastypie.fields import CharField, ForeignKey, ManyToManyField, OneToOneField, OneToManyField

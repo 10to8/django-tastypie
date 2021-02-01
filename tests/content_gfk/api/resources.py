@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 from tastypie.resources import ModelResource
 from content_gfk.models import Note, Quote, Definition, Rating

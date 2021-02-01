@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from tastypie.resources import ModelResource
 from tastypie.exceptions import NotFound
 from django.core.urlresolvers import resolve, Resolver404, get_script_prefix
@@ -29,6 +30,6 @@ class GenericResource(ModelResource):
         except Resolver404:
             raise NotFound("The URL provided '%s' was not a link to a valid resource." % uri)
 
-        parent_resource = view.func_closure[0].cell_contents.func_closure[0].cell_contents
+        parent_resource = view.__closure__[0].cell_contents.__closure__[0].cell_contents
         return parent_resource.obj_get(**self.remove_api_resource_names(kwargs))
 

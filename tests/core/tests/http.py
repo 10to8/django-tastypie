@@ -1,4 +1,5 @@
 # Basically just a sanity check to make sure things don't change from underneath us.
+from __future__ import absolute_import
 from django.test import TestCase
 from tastypie.http import *
 

@@ -1,6 +1,9 @@
 """
 The various HTTP responses for use in returning proper HTTP codes.
 """
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import with_statement
 from django.http import HttpResponse
 
 

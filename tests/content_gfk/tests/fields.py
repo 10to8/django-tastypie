@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.test import TestCase
 from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 from tastypie.bundle import Bundle

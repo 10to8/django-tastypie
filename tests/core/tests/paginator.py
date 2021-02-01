@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from django.conf import settings
 from django.test import TestCase
 from tastypie.exceptions import BadRequest
@@ -136,7 +137,7 @@ class PaginatorTestCase(TestCase):
         raised = False
         try:
             paginator.get_limit()
-        except BadRequest, e:
+        except BadRequest as e:
             raised = e
         self.assertTrue(raised)
         self.assertEqual(str(raised), "Invalid limit '-10' provided. Please provide a positive integer >= 0.")
@@ -145,7 +146,7 @@ class PaginatorTestCase(TestCase):
         raised = False
         try:
             paginator.get_limit()
-        except BadRequest, e:
+        except BadRequest as e:
             raised = e
         self.assertTrue(raised)
         self.assertEqual(str(raised), "Invalid limit 'hAI!' provided. Please provide a positive integer.")
@@ -176,7 +177,7 @@ class PaginatorTestCase(TestCase):
         raised = False
         try:
             paginator.get_offset()
-        except BadRequest, e:
+        except BadRequest as e:
             raised = e
         self.assertTrue(raised)
         self.assertEqual(str(raised), "Invalid offset '-10' provided. Please provide a positive integer >= 0.")
@@ -185,7 +186,7 @@ class PaginatorTestCase(TestCase):
         raised = False
         try:
             paginator.get_offset()
-        except BadRequest, e:
+        except BadRequest as e:
             raised = e
         self.assertTrue(raised)
         self.assertEqual(str(raised), "Invalid offset 'hAI!' provided. Please provide an integer.")

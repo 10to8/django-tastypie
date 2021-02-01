@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from django.contrib.auth.models import User
 from django.core.management.base import NoArgsCommand
 from tastypie.models import ApiKey
@@ -19,9 +21,9 @@ class Command(NoArgsCommand):
                     api_key.save()
                     
                     if self.verbosity >= 1:
-                        print u"Generated a new key for '%s'" % user.username
+                        print(u"Generated a new key for '%s'" % user.username)
             except ApiKey.DoesNotExist:
                 api_key = ApiKey.objects.create(user=user)
                 
                 if self.verbosity >= 1:
-                    print u"Created a new key for '%s'" % user.username
+                    print(u"Created a new key for '%s'" % user.username)

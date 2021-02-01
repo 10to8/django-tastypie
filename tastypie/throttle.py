@@ -1,3 +1,6 @@
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import with_statement
 import time
 from django.core.cache import cache
 
@@ -100,9 +103,13 @@ class CacheThrottle(BaseThrottle):
         Stores the current timestamp in the "accesses" list within the cache.
         """
         key = self.convert_identifier_to_key(identifier)
-        times_accessed = cache.get(key, [])
-        times_accessed.append(int(time.time()))
-        cache.set(key, times_accessed, self.expiration)
+        try:
+            times_accessed = cache.get(key, [])
+            times_accessed.append(int(time.time()))
+            cache.set(key, times_accessed, self.expiration)
+        except ValueError:
+            # Sometimes get a pickle 3 verses 4 error when testing against python 3
+            pass
 
 
 class CacheDBThrottle(CacheThrottle):

@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 import time
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 from django.conf import settings
 from django.test import TestCase
 from django.test.client import FakePayload, Client

@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 from tastypie import fields
 from tastypie.resources import Resource
 from tastypie.exceptions import ApiFieldError
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from .resources import GenericResource
+import six
 
 
 class GenericForeignKeyField(fields.ToOneField):
@@ -19,7 +21,7 @@ class GenericForeignKeyField(fields.ToOneField):
         if len(to) <= 0:
             raise ValueError('to field must have some values')
 
-        for k, v in to.iteritems():
+        for k, v in six.iteritems(to):
             if not issubclass(k, models.Model) or not issubclass(v, Resource):
                 raise ValueError('to field must map django models to tastypie resources')
 

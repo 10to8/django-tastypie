@@ -1,8 +1,10 @@
+from __future__ import absolute_import
 import time
 from django.core.cache import cache
 from django.test import TestCase
 from tastypie.models import ApiAccess
 from tastypie.throttle import BaseThrottle, CacheThrottle, CacheDBThrottle
+import six
 
 
 class NoThrottleTestCase(TestCase):
@@ -134,5 +136,5 @@ class CacheDBThrottleTestCase(TestCase):
 class ModelTestCase(TestCase):
     def test_unicode(self):
         access = ApiAccess(identifier="testing", accessed=0)
-        self.assertEqual(unicode(access), 'testing @ 0')
+        self.assertEqual(six.text_type(access), 'testing @ 0')
 

@@ -1,6 +1,8 @@
+from __future__ import absolute_import
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from six.moves import range
 
 
 class Definition(models.Model):

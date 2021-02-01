@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.core.exceptions import ImproperlyConfigured
 from django import forms
 from django.test import TestCase
@@ -27,12 +28,12 @@ class ValidationTestCase(TestCase):
     def test_init(self):
         try:
             valid = Validation()
-        except Exception, e:
+        except Exception as e:
             self.fail("Initialization failed when it should have succeeded.")
 
         try:
             valid = Validation(form_class='foo')
-        except Exception, e:
+        except Exception as e:
             self.fail("Initialization failed when it should have succeeded again.")
 
     def test_is_valid(self):
@@ -55,7 +56,7 @@ class FormValidationTestCase(TestCase):
 
         try:
             valid = FormValidation(form_class=NoteForm)
-        except Exception, e:
+        except Exception as e:
             self.fail("Initialization failed when it should have succeeded.")
 
     def test_is_valid(self):
@@ -106,7 +107,7 @@ class CleanedDataFormValidationTestCase(TestCase):
 
         try:
             valid = CleanedDataFormValidation(form_class=NoteForm)
-        except Exception, e:
+        except Exception as e:
             self.fail("Initialization failed when it should have succeeded.")
 
     def test_is_valid(self):

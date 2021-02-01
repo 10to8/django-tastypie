@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from tastypie.authorization import Authorization
 from tastypie.fields import CharField
 from tastypie.resources import ModelResource

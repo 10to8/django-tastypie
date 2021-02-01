@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from tastypie.utils.dict import dict_strip_unicode_keys
 from tastypie.utils.formatting import mk_datetime, format_datetime, format_date, format_time
 from tastypie.utils.urls import trailing_slash

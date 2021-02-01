@@ -1,3 +1,6 @@
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import with_statement
 import datetime
 from dateutil.parser import parse
 from decimal import Decimal
@@ -8,6 +11,7 @@ import importlib
 from tastypie.bundle import Bundle
 from tastypie.exceptions import ApiFieldError, NotFound
 from tastypie.utils import dict_strip_unicode_keys, make_aware
+import six
 
 
 class NOT_PROVIDED:
@@ -142,7 +146,7 @@ class ApiField(object):
         """
         if self.readonly:
             return None
-        if not bundle.data.has_key(self.instance_name):
+        if self.instance_name not in bundle.data:
             if getattr(self, 'is_related', False) and not getattr(self, 'is_m2m', False):
                 # We've got an FK (or alike field) & a possible parent object.
                 # Check for it.
@@ -180,7 +184,7 @@ class CharField(ApiField):
         if value is None:
             return None
 
-        return unicode(value)
+        return six.text_type(value)
 
 
 class FileField(ApiField):
@@ -312,7 +316,7 @@ class DateField(ApiField):
         if value is None:
             return None
 
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             match = DATE_REGEX.search(value)
 
             if match:
@@ -350,7 +354,7 @@ class DateTimeField(ApiField):
         if value is None:
             return None
 
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             match = DATETIME_REGEX.search(value)
 
             if match:
@@ -485,7 +489,7 @@ class RelatedField(ApiField):
         if self._to_class:
             return self._to_class
 
-        if not isinstance(self.to, basestring):
+        if not isinstance(self.to, six.string_types):
             self._to_class = self.to
             return self._to_class
 
@@ -556,7 +560,7 @@ class RelatedField(ApiField):
         except NotFound:
             try:
                 # Attempt lookup by primary key
-                lookup_kwargs = dict((k, v) for k, v in data.iteritems() if getattr(fk_resource, k).unique)
+                lookup_kwargs = dict((k, v) for k, v in six.iteritems(data) if getattr(fk_resource, k).unique)
 
                 if not lookup_kwargs:
                     raise NotFound()
@@ -591,7 +595,7 @@ class RelatedField(ApiField):
             'related_name': related_name,
         }
 
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             # We got a URI. Load the object and assign it.
             return self.resource_from_uri(self.fk_resource, value, **kwargs)
         elif isinstance(value, Bundle):
@@ -630,7 +634,7 @@ class ToOneField(RelatedField):
     def dehydrate(self, bundle):
         foreign_obj = None
 
-        if isinstance(self.attribute, basestring):
+        if isinstance(self.attribute, six.string_types):
             attrs = self.attribute.split('__')
             foreign_obj = bundle.obj
 
@@ -709,7 +713,7 @@ class ToManyField(RelatedField):
         previous_obj = bundle.obj
         attr = self.attribute
 
-        if isinstance(self.attribute, basestring):
+        if isinstance(self.attribute, six.string_types):
             attrs = self.attribute.split('__')
             the_m2ms = bundle.obj
 
@@ -801,14 +805,14 @@ class TimeField(ApiField):
         return self.convert(super(TimeField, self).dehydrate(obj))
 
     def convert(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             return self.to_time(value)
         return value
 
     def to_time(self, s):
         try:
             dt = parse(s)
-        except ValueError, e:
+        except ValueError as e:
             raise ApiFieldError(str(e))
         else:
             return datetime.time(dt.hour, dt.minute, dt.second)

@@ -1,14 +1,18 @@
+from __future__ import unicode_literals
+from __future__ import absolute_import
+from __future__ import with_statement
 import datetime
-from StringIO import StringIO
+from six import StringIO
 import django
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.serializers import json
 import simplejson
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text
 from tastypie.bundle import Bundle
 from tastypie.exceptions import UnsupportedFormat
 from tastypie.utils import format_datetime, format_date, format_time, make_naive
+import six
 try:
     import lxml
     from lxml.etree import parse as parse_xml
@@ -206,9 +210,9 @@ class Serializer(object):
         if isinstance(data, (list, tuple)):
             return [self.to_simple(item, options) for item in data]
         if isinstance(data, dict):
-            return dict((key, self.to_simple(val, options)) for (key, val) in data.iteritems())
+            return dict((key, self.to_simple(val, options)) for (key, val) in six.iteritems(data))
         elif isinstance(data, Bundle):
-            return dict((key, self.to_simple(val, options)) for (key, val) in data.data.iteritems())
+            return dict((key, self.to_simple(val, options)) for (key, val) in six.iteritems(data.data))
         elif hasattr(data, 'dehydrated_type'):
             if getattr(data, 'dehydrated_type', None) == 'related' and data.is_m2m == False:
                 if data.full:
@@ -230,12 +234,12 @@ class Serializer(object):
             return self.format_time(data)
         elif isinstance(data, bool):
             return data
-        elif type(data) in (long, int, float):
+        elif type(data) in (int, int, float):
             return data
         elif data is None:
             return None
         else:
-            return force_unicode(data)
+            return force_text(data)
 
     def to_etree(self, data, options=None, name=None, depth=0):
         """
@@ -257,7 +261,7 @@ class Serializer(object):
             else:
                 element = Element(name or 'object')
                 element.set('type', 'hash')
-            for (key, value) in data.iteritems():
+            for (key, value) in six.iteritems(data):
                 element.append(self.to_etree(value, options, name=key, depth=depth+1))
         elif isinstance(data, Bundle):
             element = Element(name or 'object')
@@ -289,10 +293,10 @@ class Serializer(object):
                 element.set('type', get_type_string(simple_data))
 
             if data_type != 'null':
-                if isinstance(simple_data, unicode):
+                if isinstance(simple_data, six.text_type):
                     element.text = simple_data
                 else:
-                    element.text = force_unicode(simple_data)
+                    element.text = force_text(simple_data)
 
         return element
 
@@ -450,7 +454,7 @@ def get_type_string(data):
     """
     data_type = type(data)
 
-    if data_type in (int, long):
+    if data_type in six.integer_types:
         return 'integer'
     elif data_type == float:
         return 'float'
@@ -462,5 +466,5 @@ def get_type_string(data):
         return 'hash'
     elif data is None:
         return 'null'
-    elif isinstance(data, basestring):
+    elif isinstance(data, six.string_types):
         return 'string'
