@@ -1,8 +1,12 @@
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 from __future__ import with_statement
+
+from copy import copy
 import logging
+import six
 import warnings
+
 import django
 from django.conf import settings
 from django.conf.urls import url
@@ -12,14 +16,16 @@ from django.db import transaction
 from django.db.models.sql.constants import QUERY_TERMS
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.utils.cache import patch_cache_control, patch_vary_headers
+from six.moves import map
+from future.utils import bytes_to_native_str
+from tastypie import fields
+from tastypie import http
 from tastypie.authentication import Authentication
 from tastypie.authorization import ReadOnlyAuthorization
 from tastypie.bundle import Bundle
 from tastypie.cache import NoCache
 from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.exceptions import NotFound, BadRequest, InvalidFilterError, HydrationError, InvalidSortError, ImmediateHttpResponse, UniqueConstraint
-from tastypie import fields
-from tastypie import http
 from tastypie.paginator import Paginator
 from tastypie.serializers import Serializer
 from tastypie.throttle import BaseThrottle
@@ -27,9 +33,6 @@ from tastypie.utils import is_valid_jsonp_callback_value, dict_strip_unicode_key
 from tastypie.utils.mime import determine_format, build_content_type
 from tastypie.validation import Validation
 
-from copy import copy
-import six
-from six.moves import map
 
 try:
     set
@@ -113,7 +116,7 @@ class ResourceOptions(object):
         if overrides.get('detail_allowed_methods', None) is None:
             overrides['detail_allowed_methods'] = allowed_methods
 
-        return object.__new__(type(b'ResourceOptions', (cls,), overrides))
+        return object.__new__(type(bytes_to_native_str(b'ResourceOptions'), (cls,), overrides))
 
 
 class DeclarativeMetaclass(type):
