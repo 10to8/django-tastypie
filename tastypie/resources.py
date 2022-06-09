@@ -11,13 +11,15 @@ import django
 from django.conf import settings
 from django.conf.urls import url
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
-from django.core.urlresolvers import NoReverseMatch, reverse, resolve, Resolver404, get_script_prefix
 from django.db import transaction
+from django.db.models.fields.related import ForeignKey
 from django.db.models.sql.constants import QUERY_TERMS
 from django.http import HttpResponse, HttpResponseNotFound, Http404
+from django.urls import NoReverseMatch, reverse, resolve, Resolver404, get_script_prefix
 from django.utils.cache import patch_cache_control, patch_vary_headers
-from six.moves import map
+
 from future.utils import bytes_to_native_str
+from six.moves import map
 from tastypie import fields
 from tastypie import http
 from tastypie.authentication import Authentication
@@ -1576,7 +1578,13 @@ class ModelResource(six.with_metaclass(ModelDeclarativeMetaclass, Resource)):
         contributed ApiFields.
         """
         # Ignore certain fields (related fields).
-        if getattr(field, 'rel'):
+        if isinstance(field, ForeignKey):
+            return True
+        # Ignore certain fields (related fields).
+        if hasattr(field, 'remote_field'):
+            if field.remote_field:
+                return True
+        elif getattr(field, 'rel'):
             return True
 
         return False
