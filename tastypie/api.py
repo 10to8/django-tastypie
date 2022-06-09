@@ -4,7 +4,7 @@ from __future__ import with_statement
 import warnings
 from django.conf.urls import *
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse
 from tastypie.exceptions import NotRegistered, BadRequest
 from tastypie.serializers import Serializer
