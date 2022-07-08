@@ -10,9 +10,12 @@ import warnings
 import django
 from django.conf import settings
 from django.conf.urls import url
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError, ImproperlyConfigured
 from django.db import transaction
-from django.db.models.fields.related import ForeignKey
+try:
+    from django.contrib.gis.db.models.fields import GeometryField
+except (ImproperlyConfigured, ImportError):
+    GeometryField = None
 from django.db.models.sql.constants import QUERY_TERMS
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.urls import NoReverseMatch, reverse, resolve, Resolver404, get_script_prefix
@@ -1775,16 +1778,9 @@ class ModelResource(six.with_metaclass(ModelDeclarativeMetaclass, Resource)):
 
         qs_filters = {}
 
-        if hasattr(self._meta, 'queryset'):
-            # Get the possible query terms from the current QuerySet.
-            if hasattr(self._meta.queryset.query.query_terms, 'keys'):
-                # Django 1.4 & below compatibility.
-                query_terms = list(self._meta.queryset.query.query_terms.keys())
-            else:
-                # Django 1.5+.
-                query_terms = self._meta.queryset.query.query_terms
-        else:
-            query_terms = list(QUERY_TERMS.keys())
+        query_terms = QUERY_TERMS
+        if django.VERSION >= (1, 8) and GeometryField:
+            query_terms |= set(GeometryField.class_lookups.keys())
 
         for filter_expr, value in filters.items():
             filter_bits = filter_expr.split(LOOKUP_SEP)
