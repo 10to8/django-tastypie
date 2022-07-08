@@ -16,6 +16,7 @@ try:
     from django.contrib.gis.db.models.fields import GeometryField
 except (ImproperlyConfigured, ImportError):
     GeometryField = None
+from django.db.models import ForeignKey
 from django.db.models.sql.constants import QUERY_TERMS
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.urls import NoReverseMatch, reverse, resolve, Resolver404, get_script_prefix
