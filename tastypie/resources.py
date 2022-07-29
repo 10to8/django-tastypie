@@ -17,7 +17,17 @@ try:
 except (ImproperlyConfigured, ImportError):
     GeometryField = None
 from django.db.models import ForeignKey
-from django.db.models.sql.constants import QUERY_TERMS
+try:
+    from django.db.models.sql.constants import QUERY_TERMS
+except ImportError:
+    # Django 2.1
+    # https://github.com/django-tastypie/django-tastypie/issues/1561
+    QUERY_TERMS = {
+      'exact', 'iexact', 'contains', 'icontains', 'gt', 'gte', 'lt', 'lte', 'in',
+      'startswith', 'istartswith', 'endswith', 'iendswith', 'range', 'year',
+      'month', 'day', 'week_day', 'hour', 'minute', 'second', 'isnull', 'search',
+      'regex', 'iregex',
+    }
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.urls import NoReverseMatch, reverse, resolve, Resolver404, get_script_prefix
 from django.utils.cache import patch_cache_control, patch_vary_headers
