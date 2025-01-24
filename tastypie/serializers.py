@@ -239,7 +239,7 @@ class Serializer(object):
         elif data is None:
             return None
         else:
-            return force_text(data)
+            return force_str(data)
 
     def to_etree(self, data, options=None, name=None, depth=0):
         """
@@ -296,7 +296,7 @@ class Serializer(object):
                 if isinstance(simple_data, six.text_type):
                     element.text = simple_data
                 else:
-                    element.text = force_text(simple_data)
+                    element.text = force_str(simple_data)
 
         return element
 
