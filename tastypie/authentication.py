@@ -9,10 +9,27 @@ import uuid
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ImproperlyConfigured
-from django.middleware.csrf import _sanitize_token, constant_time_compare
+from django.middleware.csrf import constant_time_compare
 from django.utils.translation import ugettext as _
 from tastypie.http import HttpUnauthorized
 from six.moves.urllib.parse import urlparse
+
+# Was removed from django4
+def _sanitize_token(token):
+    # Allow only ASCII alphanumerics
+    if re.search('[^a-zA-Z0-9]', token):
+        return _get_new_csrf_token()
+    elif len(token) == CSRF_TOKEN_LENGTH:
+        return token
+    elif len(token) == CSRF_SECRET_LENGTH:
+        # Older Django versions set cookies to values of CSRF_SECRET_LENGTH
+        # alphanumeric characters. For backwards compatibility, accept
+        # such values as unmasked secrets.
+        # It's easier to mask here and be consistent later, rather than add
+        # different code paths in the checks, although that might be a tad more
+        # efficient.
+        return _mask_cipher_secret(token)
+    return _get_new_csrf_token()
 
 try:
     from hashlib import sha1
