@@ -13,7 +13,6 @@ from django.urls import re_path as url
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
 from django.db import transaction
 from django.db.models.fields.related import ForeignKey
-from django.db.models.sql.constants import QUERY_TERMS
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.urls import NoReverseMatch, reverse, resolve, Resolver404, get_script_prefix
 from django.utils.cache import patch_cache_control, patch_vary_headers
@@ -35,6 +34,13 @@ from tastypie.utils import is_valid_jsonp_callback_value, dict_strip_unicode_key
 from tastypie.utils.mime import determine_format, build_content_type
 from tastypie.validation import Validation
 
+# This has been removed from django4
+QUERY_TERMS = {
+    'exact', 'iexact', 'contains', 'icontains', 'gt', 'gte', 'lt', 'lte', 'in',
+    'startswith', 'istartswith', 'endswith', 'iendswith', 'range', 'year',
+    'month', 'day', 'week_day', 'hour', 'minute', 'second', 'isnull', 'search',
+    'regex', 'iregex',
+}
 
 try:
     set
