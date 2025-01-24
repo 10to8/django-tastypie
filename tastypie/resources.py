@@ -9,7 +9,7 @@ import warnings
 
 import django
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import re_path as url
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
 from django.db import transaction
 from django.db.models.fields.related import ForeignKey
