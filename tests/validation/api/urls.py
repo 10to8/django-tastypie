@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from django.conf.urls.defaults import *
+from django.urls import re_path as url
 from tastypie.api import Api
 from validation.api.resources import NoteResource, UserResource, AnnotatedNoteResource
 

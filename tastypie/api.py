@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import with_statement
 import warnings
 from django.conf.urls import *
+from django.urls import re_path as url
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse
 from django.http import HttpResponse
