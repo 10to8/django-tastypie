@@ -237,13 +237,6 @@ class Resource(six.with_metaclass(DeclarativeMetaclass, object)):
                         # If the request is cacheable and we have a
                         # ``Cache-Control`` available then patch the header.
                         patch_cache_control(response, **self._meta.cache.cache_control())
-
-                if request.is_ajax() and not response.has_header("Cache-Control"):
-                    # IE excessively caches XMLHttpRequests, so we're disabling
-                    # the browser cache here.
-                    # See http://www.enhanceie.com/ie/bugs.asp for details.
-                    patch_cache_control(response, no_cache=True)
-
                 return response
             except (BadRequest, fields.ApiFieldError) as e:
                 return http.HttpBadRequest(e.args[0])
