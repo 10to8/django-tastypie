@@ -10,7 +10,9 @@ import warnings
 import django
 from django.conf import settings
 from django.urls import re_path as url
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned, ValidationError
+from django.core.exceptions import (
+    ObjectDoesNotExist, MultipleObjectsReturned, ValidationError, FieldDoesNotExist,
+)
 from django.db import transaction
 from django.db.models.fields.related import ForeignKey
 from django.http import HttpResponse, HttpResponseNotFound, Http404
@@ -33,14 +35,6 @@ from tastypie.throttle import BaseThrottle
 from tastypie.utils import is_valid_jsonp_callback_value, dict_strip_unicode_keys, trailing_slash
 from tastypie.utils.mime import determine_format, build_content_type
 from tastypie.validation import Validation
-
-# This has been removed from django4
-QUERY_TERMS = {
-    'exact', 'iexact', 'contains', 'icontains', 'gt', 'gte', 'lt', 'lte', 'in',
-    'startswith', 'istartswith', 'endswith', 'iendswith', 'range', 'year',
-    'month', 'day', 'week_day', 'hour', 'minute', 'second', 'isnull', 'search',
-    'regex', 'iregex',
-}
 
 try:
     set
@@ -1774,17 +1768,6 @@ class ModelResource(six.with_metaclass(ModelDeclarativeMetaclass, Resource)):
 
         qs_filters = {}
 
-        if hasattr(self._meta, 'queryset'):
-            # Get the possible query terms from the current QuerySet.
-            if hasattr(self._meta.queryset.query.query_terms, 'keys'):
-                # Django 1.4 & below compatibility.
-                query_terms = list(self._meta.queryset.query.query_terms.keys())
-            else:
-                # Django 1.5+.
-                query_terms = self._meta.queryset.query.query_terms
-        else:
-            query_terms = list(QUERY_TERMS.keys())
-
         for filter_expr, value in filters.items():
             filter_bits = filter_expr.split(LOOKUP_SEP)
             field_name = filter_bits.pop(0)
@@ -1793,6 +1776,19 @@ class ModelResource(six.with_metaclass(ModelDeclarativeMetaclass, Resource)):
             if not field_name in self.fields:
                 # It's not a field we know about. Move along citizen.
                 continue
+
+            # Applying fix for AttributeError: 'Query' object has no attribute 'query_terms'
+            # Took official PR ref: https://github.com/django-tastypie/django-tastypie/pull/1564
+            # Validate filter types other than 'exact' that are supported by the field type
+            try:
+                django_field_name = self.fields[field_name].attribute
+                django_field = self._meta.object_class._meta.get_field(django_field_name)
+                if hasattr(django_field, 'field'):
+                    django_field = django_field.field  # related field
+            except FieldDoesNotExist:
+                raise InvalidFilterError("The '%s' field is not a valid field name" % field_name)
+
+            query_terms = django_field.get_lookups().keys()
 
             if len(filter_bits) and filter_bits[-1] in query_terms:
                 filter_type = filter_bits.pop()
