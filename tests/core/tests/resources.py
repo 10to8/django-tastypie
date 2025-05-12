@@ -971,7 +971,7 @@ class TestOptionsResource(ModelResource):
 class PerUserAuthorization(Authorization):
     def apply_limits(self, request, object_list):
         if request and hasattr(request, 'user'):
-            if request.user.is_authenticated():
+            if request.user.is_authenticated:
                 object_list = object_list.filter(author=request.user)
             else:
                 object_list = object_list.none()

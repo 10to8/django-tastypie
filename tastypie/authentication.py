@@ -12,24 +12,10 @@ from django.core.exceptions import ImproperlyConfigured
 from django.middleware.csrf import constant_time_compare
 from django.utils.translation import gettext as _
 from tastypie.http import HttpUnauthorized
-from six.moves.urllib.parse import urlparse
-
-# Was removed from django4
-def _sanitize_token(token):
-    # Allow only ASCII alphanumerics
-    if re.search('[^a-zA-Z0-9]', token):
-        return _get_new_csrf_token()
-    elif len(token) == CSRF_TOKEN_LENGTH:
-        return token
-    elif len(token) == CSRF_SECRET_LENGTH:
-        # Older Django versions set cookies to values of CSRF_SECRET_LENGTH
-        # alphanumeric characters. For backwards compatibility, accept
-        # such values as unmasked secrets.
-        # It's easier to mask here and be consistent later, rather than add
-        # different code paths in the checks, although that might be a tad more
-        # efficient.
-        return _mask_cipher_secret(token)
-    return _get_new_csrf_token()
+from urllib.parse import urlparse
+from tastypie.compat import (
+    get_user_model, get_username_field, compare_sanitized_tokens, InvalidTokenFormat, check_token_format
+)
 
 try:
     from hashlib import sha1
@@ -278,12 +264,16 @@ class SessionAuthentication(Authentication):
         # We also can't risk accessing ``request.POST``, which will break with
         # the serialized bodies.
         if request.method in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
-            return request.user.is_authenticated()
+            return request.user.is_authenticated
 
         if getattr(request, '_dont_enforce_csrf_checks', False):
-            return request.user.is_authenticated()
+            return request.user.is_authenticated
 
-        csrf_token = _sanitize_token(request.COOKIES.get(settings.CSRF_COOKIE_NAME, ''))
+        csrf_token = request.COOKIES.get(settings.CSRF_COOKIE_NAME, '')
+        try:
+            csrf_token = check_token_format(csrf_token)
+        except InvalidTokenFormat:
+            return False
 
         if request.is_secure():
             referer = request.META.get('HTTP_REFERER')
@@ -297,11 +287,18 @@ class SessionAuthentication(Authentication):
                 return False
 
         request_csrf_token = request.META.get('HTTP_X_CSRFTOKEN', '')
-
-        if not constant_time_compare(request_csrf_token, csrf_token):
+        try:
+            request_csrf_token = check_token_format(request_csrf_token)
+        except InvalidTokenFormat:
             return False
 
-        return request.user.is_authenticated()
+        try:
+            if not compare_sanitized_tokens(request_csrf_token, csrf_token):
+                return False
+        except AssertionError:
+            return False
+
+        return request.user.is_authenticated
 
     def get_identifier(self, request):
         """
