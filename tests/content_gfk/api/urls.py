@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.conf.urls.defaults import *
 from tastypie.api import Api
 from content_gfk.api.resources import NoteResource, QuoteResource, \

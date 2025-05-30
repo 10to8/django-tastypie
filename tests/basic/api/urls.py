@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.conf.urls.defaults import *
 from tastypie.api import Api
 from basic.api.resources import NoteResource, UserResource, BustedResource, CachedUserResource, PublicCachedUserResource, PrivateCachedUserResource, SlugBasedNoteResource, SessionUserResource

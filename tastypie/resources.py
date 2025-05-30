@@ -1,10 +1,6 @@
-from __future__ import absolute_import
-from __future__ import unicode_literals
-from __future__ import with_statement
 
 from copy import copy
 import logging
-import six
 import warnings
 
 import django
@@ -19,8 +15,6 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.urls import NoReverseMatch, reverse, resolve, Resolver404, get_script_prefix
 from django.utils.cache import patch_cache_control, patch_vary_headers
 
-from future.utils import bytes_to_native_str
-from six.moves import map
 from tastypie import fields
 from tastypie import http
 from tastypie.authentication import Authentication
@@ -119,7 +113,7 @@ class ResourceOptions(object):
         if overrides.get('detail_allowed_methods', None) is None:
             overrides['detail_allowed_methods'] = allowed_methods
 
-        return object.__new__(type(bytes_to_native_str(b'ResourceOptions'), (cls,), overrides))
+        return object.__new__(type('ResourceOptions', (cls,), overrides))
 
 
 class DeclarativeMetaclass(type):
@@ -175,7 +169,7 @@ class DeclarativeMetaclass(type):
         return new_class
 
 
-class Resource(six.with_metaclass(DeclarativeMetaclass, object)):
+class Resource(metaclass=DeclarativeMetaclass):
     """
     Handles the data, request dispatch and responding to requests.
 
@@ -190,7 +184,7 @@ class Resource(six.with_metaclass(DeclarativeMetaclass, object)):
     def __init__(self, api_name=None):
 
         #self.fields = deepcopy(self.base_fields)
-        self.fields = {k: copy(v) for k, v in six.iteritems(self.base_fields)}
+        self.fields = {k: copy(v) for k, v in self.base_fields.items()}
 
         if not api_name is None:
             self._meta.api_name = api_name
@@ -282,11 +276,11 @@ class Resource(six.with_metaclass(DeclarativeMetaclass, object)):
             response_code = 404
 
         from core.lib.logger import tastypie_logger
-        tastypie_logger.exception("TastyPie Error: '%s', traceback: '%s' " % (six.text_type(exception), the_trace))
+        tastypie_logger.exception("TastyPie Error: '%s', traceback: '%s' " % (str(exception), the_trace))
 
         if settings.DEBUG or getattr(settings, 'TASTYPIE_FULL_DEBUG', False):
             data = {
-                "error_message": six.text_type(exception),
+                "error_message": str(exception),
                 "traceback": the_trace,
             }
             desired_format = self.determine_format(request)
@@ -1561,7 +1555,7 @@ class ModelDeclarativeMetaclass(DeclarativeMetaclass):
         return new_class
 
 
-class ModelResource(six.with_metaclass(ModelDeclarativeMetaclass, Resource)):
+class ModelResource(Resource, metaclass=ModelDeclarativeMetaclass):
     """
     A subclass of ``Resource`` designed to work with Django's ``Models``.
 
@@ -2151,7 +2145,7 @@ class ModelResource(six.with_metaclass(ModelDeclarativeMetaclass, Resource)):
             # Get the manager.
             related_mngr = None
 
-            if isinstance(field_object.attribute, six.string_types):
+            if isinstance(field_object.attribute, str):
                 related_mngr = getattr(bundle.obj, field_object.attribute)
             elif callable(field_object.attribute):
                 related_mngr = field_object.attribute(bundle)

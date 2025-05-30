@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.contrib.auth.models import User
 from tastypie.cache import SimpleCache
 from tastypie import fields

@@ -1,8 +1,5 @@
-from __future__ import unicode_literals
-from __future__ import absolute_import
-from __future__ import with_statement
 import datetime
-from six import StringIO
+from io import StringIO
 import django
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -12,7 +9,7 @@ from django.utils.encoding import force_str
 from tastypie.bundle import Bundle
 from tastypie.exceptions import UnsupportedFormat
 from tastypie.utils import format_datetime, format_date, format_time, make_naive
-import six
+
 try:
     import lxml
     from lxml.etree import parse as parse_xml
@@ -210,9 +207,9 @@ class Serializer(object):
         if isinstance(data, (list, tuple)):
             return [self.to_simple(item, options) for item in data]
         if isinstance(data, dict):
-            return dict((key, self.to_simple(val, options)) for (key, val) in six.iteritems(data))
+            return dict((key, self.to_simple(val, options)) for (key, val) in data.items())
         elif isinstance(data, Bundle):
-            return dict((key, self.to_simple(val, options)) for (key, val) in six.iteritems(data.data))
+            return dict((key, self.to_simple(val, options)) for (key, val) in data.data.items())
         elif hasattr(data, 'dehydrated_type'):
             if getattr(data, 'dehydrated_type', None) == 'related' and data.is_m2m == False:
                 if data.full:
@@ -261,7 +258,7 @@ class Serializer(object):
             else:
                 element = Element(name or 'object')
                 element.set('type', 'hash')
-            for (key, value) in six.iteritems(data):
+            for (key, value) in data.items():
                 element.append(self.to_etree(value, options, name=key, depth=depth+1))
         elif isinstance(data, Bundle):
             element = Element(name or 'object')
@@ -293,7 +290,7 @@ class Serializer(object):
                 element.set('type', get_type_string(simple_data))
 
             if data_type != 'null':
-                if isinstance(simple_data, six.text_type):
+                if isinstance(simple_data, str):
                     element.text = simple_data
                 else:
                     element.text = force_str(simple_data)
@@ -454,7 +451,7 @@ def get_type_string(data):
     """
     data_type = type(data)
 
-    if data_type in six.integer_types:
+    if data_type in int:
         return 'integer'
     elif data_type == float:
         return 'float'
@@ -466,5 +463,5 @@ def get_type_string(data):
         return 'hash'
     elif data is None:
         return 'null'
-    elif isinstance(data, six.string_types):
+    elif isinstance(data, str):
         return 'string'

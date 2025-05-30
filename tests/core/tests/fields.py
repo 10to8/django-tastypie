@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import datetime
 from dateutil.tz import *
 from django.db import models

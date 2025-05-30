@@ -1,5 +1,4 @@
-from __future__ import absolute_import
-import six.moves.http_client
+import http.client
 from django.utils import simplejson as json
 from testcases import TestServerTestCase
 
@@ -12,7 +11,7 @@ class HTTPTestCase(TestServerTestCase):
         self.stop_test_server()
 
     def get_connection(self):
-        return six.moves.http_client.HTTPConnection('localhost', 8001)
+        return http.client.HTTPConnection('localhost', 8001)
 
     def test_get_apis_json(self):
         connection = self.get_connection()

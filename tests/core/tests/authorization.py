@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.test import TestCase
 from django.http import HttpRequest
 from django.contrib.auth.models import User, Permission

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 try:
     from setuptools import setup
 except ImportError:
@@ -10,7 +9,7 @@ except ImportError:
 
 setup(
     name='django-tastypie',
-    version='0.9.16-alpha',
+    version='0.9.17-alpha',
     description='A flexible & capable API layer for Django.',
     author='Daniel Lindsley',
     author_email='daniel@toastdriven.com',

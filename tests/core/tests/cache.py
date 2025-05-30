@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import time
 from django.core.cache import cache
 from django.test import TestCase
