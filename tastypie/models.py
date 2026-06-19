@@ -5,11 +5,7 @@ from django.conf import settings
 from django.db import models
 from tastypie.utils import now
 
-try:
-    from hashlib import sha1
-except ImportError:
-    import sha
-    sha1 = sha.sha
+from hashlib import sha1
 
 
 class ApiAccess(models.Model):
@@ -18,9 +14,9 @@ class ApiAccess(models.Model):
     url = models.CharField(max_length=255, blank=True, default='')
     request_method = models.CharField(max_length=10, blank=True, default='')
     accessed = models.PositiveIntegerField()
-    
-    def __unicode__(self):
-        return u"%s @ %s" % (self.identifier, self.accessed)
+
+    def __str__(self):
+        return "%s @ %s" % (self.identifier, self.accessed)
     
     def save(self, *args, **kwargs):
         self.accessed = int(time.time())
@@ -42,12 +38,12 @@ if 'django.contrib.auth' in settings.INSTALLED_APPS:
             user_model_reference = 'auth.User'
 
     class ApiKey(models.Model):
-        user = models.OneToOneField(user_model_reference, related_name='api_key')
+        user = models.OneToOneField(user_model_reference, on_delete=models.CASCADE, related_name='api_key')
         key = models.CharField(max_length=256, blank=True, default='')
         created = models.DateTimeField(default=now)
 
-        def __unicode__(self):
-            return u"%s for %s" % (self.key, self.user)
+        def __str__(self):
+            return "%s for %s" % (self.key, self.user)
         
         def save(self, *args, **kwargs):
             if not self.key:
@@ -59,7 +55,7 @@ if 'django.contrib.auth' in settings.INSTALLED_APPS:
             # Get a random UUID.
             new_uuid = uuid.uuid4()
             # Hmac that beast.
-            return hmac.new(str(new_uuid), digestmod=sha1).hexdigest()
+            return hmac.new(str(new_uuid).encode('utf-8'), digestmod=sha1).hexdigest()
     
     
     def create_api_key(sender, **kwargs):

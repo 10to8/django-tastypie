@@ -3,7 +3,6 @@ from dateutil.parser import parse
 from decimal import Decimal
 import re
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.utils import datetime_safe
 import importlib
 from tastypie.bundle import Bundle
 from tastypie.exceptions import ApiFieldError, NotFound
@@ -317,7 +316,7 @@ class DateField(ApiField):
 
             if match:
                 data = match.groupdict()
-                return datetime_safe.date(int(data['year']), int(data['month']), int(data['day']))
+                return datetime.date(int(data['year']), int(data['month']), int(data['day']))
             else:
                 raise ApiFieldError("Date provided to '%s' field doesn't appear to be a valid date string: '%s'" % (self.instance_name, value))
 
@@ -355,7 +354,7 @@ class DateTimeField(ApiField):
 
             if match:
                 data = match.groupdict()
-                return make_aware(datetime_safe.datetime(int(data['year']), int(data['month']), int(data['day']), int(data['hour']), int(data['minute']), int(data['second'])))
+                return make_aware(datetime.datetime(int(data['year']), int(data['month']), int(data['day']), int(data['hour']), int(data['minute']), int(data['second'])))
             else:
                 raise ApiFieldError("Datetime provided to '%s' field doesn't appear to be a valid datetime string: '%s'" % (self.instance_name, value))
 

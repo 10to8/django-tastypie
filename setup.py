@@ -34,6 +34,7 @@ setup(
         'dateutil(>=1.5, !=2.0)',
     ],
     install_requires=[
+        'Django>=4.2,<5.3',
         'mimeparse',
         'python_dateutil >= 1.5, != 2.0',
     ],
@@ -41,10 +42,15 @@ setup(
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Framework :: Django',
+        'Framework :: Django :: 4.2',
+        'Framework :: Django :: 5.0',
+        'Framework :: Django :: 5.1',
+        'Framework :: Django :: 5.2',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Topic :: Utilities'
     ],
 )
