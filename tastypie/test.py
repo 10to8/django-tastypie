@@ -261,7 +261,7 @@ class ResourceTestCase(TestCase):
         from tastypie.authentication import hmac, sha1, uuid, python_digest
 
         new_uuid = uuid.uuid4()
-        opaque = hmac.new(str(new_uuid), digestmod=sha1).hexdigest()
+        opaque = hmac.new(str(new_uuid).encode('utf-8'), digestmod=sha1).hexdigest()
         return python_digest.build_authorization_request(
             username,
             method.upper(),
